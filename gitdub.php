@@ -85,6 +85,13 @@ function do_cmd($cmd)
     }
 }
 
+function debug($config, $str)
+{
+    if (isset($config["debug"]) && $config["debug"]) {
+        print($str);
+    }
+}
+
 function check_for_script($config)
 {
     # Sanity check
@@ -217,14 +224,12 @@ function determine_remote($config, $opts)
 
 function get_clone($config, $opts, $remote)
 {
-    # JMS debug
-    #print("CWD is: " . getcwd() . "\n");
+    debug($config, "CWD is: " . getcwd() . "\n");
 
     $repo = $opts["repo"];
     $dir = getcwd() . "/" . $config["state_dir"] . "/$repo";
     if (!is_dir($dir)) {
-        # JMS debug
-        #print "Need to make dir! $dir\n";
+        debug($config, "Need to make dir! $dir\n");
         if (!mkdir($dir, 0755, true)) {
             my_die("mkdir of $dir failed\n");
         }
@@ -235,8 +240,7 @@ function get_clone($config, $opts, $remote)
             escapeshellarg($dir);
         do_cmd($cmd, $ret);
     } else {
-        # JMS debug
-        #print "Already have dir: $dir\n";
+        debug($config, "Already have dir: $dir\n");
     }
 
     # Gitdub checks for empty directories here; is that really necessary?
@@ -277,8 +281,7 @@ function set_clone_config($config, $opts, $dir)
     foreach ($cfg as $k => $v) {
         if (isset($v)) {
             $cmd = "git config --local $k " . escapeshellarg($v);
-            # JMS debug
-            #print("Running config cmd: $cmd\n");
+            debug($config, "Running config cmd: $cmd");
             do_cmd($cmd, $ret);
         }
     }
@@ -310,8 +313,7 @@ function notify($config, $opts, $dir)
     $cmd = $config["post-receive-email"];
     $process = proc_open($cmd, $descriptors, $pipes, NULL, NULL);
     if (is_resource($process)) {
-        # JMS debug
-        # print("proc_open WRITING: $oldrev $newrev $refname\n");
+        debug($config, "proc_open WRITING: $oldrev $newrev $refname\n");
         if (!fwrite($pipes[0], "$oldrev $newrev $refname\n")) {
             my_die("fwrite to $cmd failed!\n");
         }
@@ -319,21 +321,21 @@ function notify($config, $opts, $dir)
         # Sleep a second to let the process run, otherwise a non-blocking
         # read on the pipe will get nothing back
         sleep(1);
+
         stream_set_blocking($pipes[1], FALSE);
         $stdout = stream_get_contents($pipes[1]);
-        # JMS debug
-        #print("STDOUT: $stdout\n");
+        debug($config, "STDOUT: $stdout\n");
+
         stream_set_blocking($pipes[2], FALSE);
         $stderr = stream_get_contents($pipes[2]);
-        # JMS debug
-        #print("STDERR: $stderr\n");
+        debug($config, "STDERR: $stderr\n");
 
         fclose($pipes[0]);
         fclose($pipes[1]);
         fclose($pipes[2]);
+
         $ret = proc_close($process);
-        # JMS debug
-        #print("Command ($cmd) return value: $ret\n");
+        debug($config, "Command ($cmd) return value: $ret\n");
     } else {
         my_die("Failed to proc_open\n");
     }
@@ -390,11 +392,9 @@ $opts = fill_opts_from_json($json);
 $repo = $opts["repo"] = $json->{"repository"}->{"full_name"};
 
 foreach ($config["github"] as $key => $value) {
-    # JMS debug
-    # print("Checking github id ($match) against: $key<br />\n");
+    debug($config, "Checking github id ($repo) against: $key<br />\n");
     if ($repo == $key) {
-        # JMS debug
-        #print("Found match!\n");
+        debug($config, "Found match!\n");
 
         process($config, $opts, $key, $value);
 

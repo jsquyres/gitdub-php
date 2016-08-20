@@ -70,6 +70,9 @@ function fill_config()
     $config["github"]["jsquyres/gitdub-php"]["to"] =
         "gitdub-php-commits@example.com";
 
+    # You almost certainly want "debug" set to 0 (or unset)
+    $config["debug"] = 0;
+
     # Return the $config variable
     return $config;
 }

@@ -372,7 +372,7 @@ function process($config, $opts, $key, $value)
 
 # Verify that this is a POST
 if (!isset($_POST) || count($_POST) == 0) {
-    print("Use $THIS_URL as a WebHook URL in your Github repository settings.\n");
+    print("Use " . $_SERVER["REQUEST_URI"] . " as a WebHook URL in your Github repository settings.\n");
     exit(1);
 }
 

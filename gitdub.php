@@ -98,6 +98,18 @@ function my_die($msg)
     die($msg);
 }
 
+function do_cmd($cmd)
+{
+    system($cmd, $ret);
+
+    # This is somewhat of a hack (checking the return value directly),
+    # but pcntl_*() functions are new / may not be available in your
+    # version of PHP.
+    if ($ret != 0 && $ret < 128) {
+        my_die("Command failed (in dir: " . getcwd() . ", ret=$ret): $cmd\n");
+    }
+}
+
 function check_for_script($config)
 {
     # Sanity check
@@ -242,14 +254,11 @@ function get_clone($config, $opts, $remote)
             my_die("mkdir of $dir failed\n");
         }
         # JMS debug
-        #system("ls -ld $dir\n");
+        #do_cmd("ls -ld $dir\n");
 
         $cmd = "git clone --bare " . escapeshellarg($remote) . " " .
             escapeshellarg($dir);
-        system($cmd, $ret);
-        if ($ret != 0) {
-            my_die("Command failed: $cmd\n");
-        }
+        do_cmd($cmd, $ret);
     } else {
         # JMS debug
         #print "Already have dir: $dir\n";
@@ -295,15 +304,12 @@ function set_clone_config($config, $opts, $dir)
             $cmd = "git config --local $k " . escapeshellarg($v);
             # JMS debug
             #print("Running config cmd: $cmd\n");
-            system($cmd, $ret);
-            if ($ret != 0) {
-                my_die("Command failed: $cmd\n");
-            }
+            do_cmd($cmd, $ret);
         }
     }
 
     # JMS debug
-    #system("cat config");
+    #do_cmd("cat config");
 
     # Overwrite the default "description" file
     $repo = $opts["repo"];
@@ -315,10 +321,7 @@ function set_clone_config($config, $opts, $dir)
 function notify($config, $opts, $dir)
 {
     $cmd = 'git fetch origin +refs/heads/*:refs/heads/*';
-    system($cmd, $ret);
-    if ($ret != 0) {
-        my_die("Command failed: $cmd\n");
-    }
+    do_cmd($cmd);
 
     $oldrev = $opts["before"];
     $newrev = $opts["after"];

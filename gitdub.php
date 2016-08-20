@@ -52,35 +52,10 @@
 ##############################################################################
 ##############################################################################
 
-function fill_config()
-{
-    # The subdir where gitdub.php will store its git clones, etc.  It
-    # is relative to the directory where gitdub.php executes.
-    $config["state_dir"] = ".gitdub-php";
-
-    # Fill in the location of your executable post-receive-email script
-    # (from the git tarball distribution)
-    $config["post-receive-email"] = "/path/to/post-receive-email";
-
-    # Github.php will ignore any incoming POST that does not come from
-    # these network blocks (in CIDR notation).  As of 9 Aug 2016,
-    # according to
-    # https://help.github.com/articles/what-ip-addresses-does-github-use-that-i-should-whitelist/,
-    # Github uses the following IP block:
-    $config["allowed_sources"] = array("192.30.252.0/22");
-
-    # These are global values that apply to all repos listed below,
-    # unless each repo overrides them.
-    $config["from"] = 'Gitdub-php <do-not-reply@example.com>';
-    $config["to"] = "someone-who-cares@example.com";
-    $config["subject"] = "Git: ";
-    $config["protocol"] = "https";
-
-    # An individual repo
-    $config["github"]["jsquyres/github-php"]["to"] = "me@example.com";
-
-    return $config;
+if (!is_file("config.inc")) {
+    my_die("Cannot find gitdub.php's config.inc file.");
 }
+require_once "config.inc";
 
 ##############################################################################
 ##############################################################################

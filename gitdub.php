@@ -303,15 +303,40 @@ function notify($config, $opts, $dir)
     $refname = $opts["refname"];
 
     $descriptors = array(
-        0 => array("pipe", "w"),
-        1 => array("pipe", "r"),
-        2 => array("pipe", "r")
+        0 => array("pipe", "r"),
+        1 => array("pipe", "w"),
+        2 => array("pipe", "w")
     );
-    $handle = popen($config["post-receive-email"], "w");
-    # JMS debug
-    #print("WRITING: $oldrev $newrev $refname\n");
-    fwrite($handle, "$oldrev $newrev $refname\n");
-    fclose($handle);
+    $cmd = $config["post-receive-email"];
+    $process = proc_open($cmd, $descriptors, $pipes, NULL, NULL);
+    if (is_resource($process)) {
+        # JMS debug
+        # print("proc_open WRITING: $oldrev $newrev $refname\n");
+        if (!fwrite($pipes[0], "$oldrev $newrev $refname\n")) {
+            my_die("fwrite to $cmd failed!\n");
+        }
+
+        # Sleep a second to let the process run, otherwise a non-blocking
+        # read on the pipe will get nothing back
+        sleep(1);
+        stream_set_blocking($pipes[1], FALSE);
+        $stdout = stream_get_contents($pipes[1]);
+        # JMS debug
+        #print("STDOUT: $stdout\n");
+        stream_set_blocking($pipes[2], FALSE);
+        $stderr = stream_get_contents($pipes[2]);
+        # JMS debug
+        #print("STDERR: $stderr\n");
+
+        fclose($pipes[0]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        $ret = proc_close($process);
+        # JMS debug
+        #print("Command ($cmd) return value: $ret\n");
+    } else {
+        my_die("Failed to proc_open\n");
+    }
 
     # Put something in the Github webhook result output
     print("gitdub.php: post-receive-email successfully invoked\n");

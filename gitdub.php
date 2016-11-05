@@ -148,9 +148,6 @@ function parse_json()
         my_die("Got invalid JSON\n");
     }
 
-    # JMS debug
-    #print_r($json);
-
     return $json;
 }
 
@@ -233,8 +230,6 @@ function get_clone($config, $opts, $remote)
         if (!mkdir($dir, 0755, true)) {
             my_die("mkdir of $dir failed\n");
         }
-        # JMS debug
-        #do_cmd("ls -ld $dir\n");
 
         $cmd = "git clone --bare " . escapeshellarg($remote) . " " .
             escapeshellarg($dir);
@@ -285,9 +280,6 @@ function set_clone_config($config, $opts, $dir)
             do_cmd($cmd, $ret);
         }
     }
-
-    # JMS debug
-    #do_cmd("cat config");
 
     # Overwrite the default "description" file
     $repo = $opts["repo"];
@@ -350,9 +342,6 @@ function process($config, $opts, $key, $value)
 
     # Figure out the URL to use for the git repo
     $remote = determine_remote($config, $opts);
-
-    # JMS debug
-    #print_r($opts);
 
     # Clone the repo if we haven't already
     $dir = get_clone($config, $opts, $remote);

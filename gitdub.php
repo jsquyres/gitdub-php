@@ -48,14 +48,14 @@
 
 ##############################################################################
 ##############################################################################
-# Fill in your configuration values in this routine
+# Fill in your configuration values in the gitdub-config.inc file
 ##############################################################################
 ##############################################################################
 
-if (!is_file("config.php")) {
-    my_die("Cannot find gitdub.php's config.php file.");
+if (!is_file("gitdub-config.inc")) {
+    my_die("Cannot find gitdub.php's gitdub-config.inc file.");
 }
-require_once "config.php";
+require_once "config.inc";
 
 ##############################################################################
 ##############################################################################
@@ -380,6 +380,9 @@ $opts = fill_opts_from_json($json);
 # is from one we recognize
 $repo = $opts["repo"] = $json->{"repository"}->{"full_name"};
 
+# The keys of $config["github"] are repo names (e.g.,
+# "jsquyres/gitdub-php").  The keys of $config["github"][$repo_name]
+# are all the config values for that repo.
 foreach ($config["github"] as $key => $value) {
     debug($config, "Checking github id ($repo) against: $key<br />\n");
     if ($repo == $key) {

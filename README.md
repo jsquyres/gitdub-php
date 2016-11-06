@@ -26,12 +26,12 @@ Installation is comprised of two parts:
    * A directory that is readable by the web server (e.g., your `$HOME` directory)
    * But the directory is **NOT** readable by clients (e.g., *outside* the docroot)
    * Make sure the script is marked as executable (e.g., `chmod +x post-receive-email`)
-1. Copy the sample `config.php` to the same folder.
-   * Edit the `config.php` to reflect the configuration that you want.  This usually means indicating the Github repos for which you want to receive incoming notifications.
+1. Copy the sample `gitdub-config.inc` to the same folder.
+   * Edit the `gitdub-config.inc` to reflect the configuration that you want.  This usually means indicating the Github repos for which you want to receive incoming notifications.
    * Ensure to set the `post-receive-email` config value to the absolute path name to the `post-receive-email` script in the web server file system.
-   * **OPTIONAL:** Configure your web server to deny client access to `config.php`.  For example, you can create a `.htaccess` file in the same directory to restrict access to your `config.php` containing:
+   * **OPTIONAL:** Configure your web server to deny client access to `gitdub-config.inc`.  For example, you can create a `.htaccess` file in the same directory to restrict access to your `gitdub-config.inc` containing:
 ```xml
-<Files "config.inc">
+<Files "gitdub-config.inc">
     Order allow,deny
     Deny from all
     Satisfy all
@@ -39,13 +39,13 @@ Installation is comprised of two parts:
 ```
 1. Make a subdirectory for `gitdub.php` to store its state
    * This subdirectory must be in the same directory as `gitdub.php`.
-   * The default name for this subdirectory -- as specified in `config.php` -- is `.gitdub-php`.  For example:
+   * The default name for this subdirectory -- as specified in `gitdub-config.inc` -- is `.gitdub-php`.  For example:
 ```
 $ ls -la
 total 36
 drwxrwsr-x 3 jeff     web       4096 Aug 20 18:18 ./
 drwxr-sr-x 3 jeff     web       4096 Aug  9 10:29 ../
--rw-r--r-- 1 jeff     web       3587 Aug 20 18:16 config.php
+-rw-r--r-- 1 jeff     web       3587 Aug 20 18:16 gitdub-config.inc
 drwxrwsr-x 3 jeff     web       4096 Aug 20 18:07 .gitdub-php/
 -rw-r--r-- 1 jeff     web      12051 Aug 20 18:16 gitdub.php
 -rw-r--r-- 1 jeff     web        119 Aug 20 18:18 .htaccess

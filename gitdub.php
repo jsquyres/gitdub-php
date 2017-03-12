@@ -268,6 +268,7 @@ function set_clone_config($config, $opts, $dir)
     # in the NAME enviroment variable, which sendmail will recognize.
     $cfg["hooks.envelopesender"] = get_value($config, $opts, "from");
     preg_match("/^(.+)\s*\<(.+)\>$/", $cfg["hooks.envelopesender"], $matches);
+    debug($config, "Envelope sender: $matches[0] / $matches[1] / $matches[2]\n");
     if ($matches[1] <> "" && $matches[2] <> "") {
         putenv("NAME='$matches[1]'");
         $cfg["hooks.envelopesender"] = $matches[2];
@@ -396,7 +397,7 @@ $repo = $opts["repo"] = $json->{"repository"}->{"full_name"};
 # "jsquyres/gitdub-php").  The keys of $config["github"][$repo_name]
 # are all the config values for that repo.
 foreach ($config["github"] as $key => $value) {
-    debug($config, "Checking github id ($match) against: $key<br />\n");
+    debug($config, "Checking github id ($repo) against: $key<br />\n");
     if ($repo == $key) {
         debug($config, "Found match!\n");
 

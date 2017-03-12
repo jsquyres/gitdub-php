@@ -259,8 +259,20 @@ function set_clone_config($config, $opts, $dir)
     if (!chdir($dir)) {
         my_die("Failed to chdir to $dir");
     }
+
+    # Git's post-receive-mail script uses sendmail to send, which uses
+    # the -f argument to set the envelope sender.  However, this
+    # doesn't recognize the form "foo <bar@example.com>", meaning that
+    # this form will use "<bar@example.com>" and will ignore the "foo"
+    # part.  So strip out the "foo" part (if it's there) and set that
+    # in the NAME enviroment variable, which sendmail will recognize.
     $cfg["hooks.envelopesender"] = get_value($config, $opts, "from");
-    $cfg["hooks.emailprefix"] = get_value($config, $opts, "subject");
+    preg_match("/^(.+)\s*\<(.+)\>$/", $cfg["hooks.envelopesender"], $matches);
+    if ($matches[1] <> "" && $matches[2] <> "") {
+        putenv("NAME='$matches[1]'");
+        $cfg["hooks.envelopesender"] = $matches[2];
+    }
+
     $to = get_value($config, $opts, "to");
     if (is_array($to)) {
         $cfg["hooks.mailinglist"] = join(",", $to);

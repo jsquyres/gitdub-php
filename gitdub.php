@@ -55,7 +55,7 @@
 if (!is_file("gitdub-config.inc")) {
     my_die("Cannot find gitdub.php's gitdub-config.inc file.");
 }
-require_once "config.inc";
+require_once "gitdub-config.inc";
 
 ##############################################################################
 ##############################################################################
@@ -259,8 +259,20 @@ function set_clone_config($config, $opts, $dir)
     if (!chdir($dir)) {
         my_die("Failed to chdir to $dir");
     }
+
+    # Git's post-receive-mail script uses sendmail to send, which uses
+    # the -f argument to set the envelope sender.  However, this
+    # doesn't recognize the form "foo <bar@example.com>", meaning that
+    # this form will use "<bar@example.com>" and will ignore the "foo"
+    # part.  So strip out the "foo" part (if it's there) and set that
+    # in the NAME enviroment variable, which sendmail will recognize.
     $cfg["hooks.envelopesender"] = get_value($config, $opts, "from");
-    $cfg["hooks.emailprefix"] = get_value($config, $opts, "subject");
+    preg_match("/^(.+)\s*\<(.+)\>$/", $cfg["hooks.envelopesender"], $matches);
+    if ($matches[1] <> "" && $matches[2] <> "") {
+        putenv("NAME='$matches[1]'");
+        $cfg["hooks.envelopesender"] = $matches[2];
+    }
+
     $to = get_value($config, $opts, "to");
     if (is_array($to)) {
         $cfg["hooks.mailinglist"] = join(",", $to);
@@ -276,7 +288,7 @@ function set_clone_config($config, $opts, $dir)
     foreach ($cfg as $k => $v) {
         if (isset($v)) {
             $cmd = "git config --local $k " . escapeshellarg($v);
-            debug($config, "Running config cmd: $cmd");
+            debug($config, "Running config cmd: $cmd\n");
             do_cmd($cmd, $ret);
         }
     }
@@ -361,7 +373,7 @@ function process($config, $opts, $key, $value)
 
 # Verify that this is a POST
 if (!isset($_POST) || count($_POST) == 0) {
-    print("Use " . $_SERVER["REQUEST_URI"] . " as a WebHook URL in your Github repository settings.\n");
+    print("Use $THIS_URL as a WebHook URL in your Github repository settings.\n");
     exit(1);
 }
 
@@ -384,7 +396,7 @@ $repo = $opts["repo"] = $json->{"repository"}->{"full_name"};
 # "jsquyres/gitdub-php").  The keys of $config["github"][$repo_name]
 # are all the config values for that repo.
 foreach ($config["github"] as $key => $value) {
-    debug($config, "Checking github id ($repo) against: $key<br />\n");
+    debug($config, "Checking github id ($match) against: $key<br />\n");
     if ($repo == $key) {
         debug($config, "Found match!\n");
 

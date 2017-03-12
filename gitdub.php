@@ -55,7 +55,7 @@
 if (!is_file("gitdub-config.inc")) {
     my_die("Cannot find gitdub.php's gitdub-config.inc file.");
 }
-require_once "config.inc";
+require_once "gitdub-config.inc";
 
 ##############################################################################
 ##############################################################################
